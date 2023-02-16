@@ -57,6 +57,11 @@ class SoundReceiverModule(naoqi.ALModule):
             print("INF: SoundReceiver: started!")
             time.sleep(5)
             audio.unsubscribe(self.getName())
+            song_info = self.recognize_from_file()
+            song_name = song_info.get('songname')
+            # TODO: say the name of the song with tts
+            # TODO: start dancing the correct dance for the song
+            # TODO: after dance is finished, start listening again for next song
 
     def stop(self):
         print("INF: SoundReceiver: stopping...")
@@ -89,31 +94,13 @@ class SoundReceiverModule(naoqi.ALModule):
             out_f.setframerate(48000)
             out_f.writeframesraw(data)
             out_f.close()
-
-    def convert_raw_to_wav(self):
-        for nNumChannel in range(1, self.nbOfChannels):
-            self.aSoundData[nNumChannel].tofile(self.aOutfile[nNumChannel - 1])
-            # convert to wav???
-            strFilenameOutChan = self.strFilenameOut.replace(".raw", "_%d.raw" % nNumChannel)
-            strFilenameOutChanWav = strFilenameOutChan.replace(".raw", ".wav")
-            fileNameFinal = strFilenameOutChanWav
-            with open(strFilenameOutChan, "rb") as inp_f:
-                data = inp_f.read()
-                with wave.open(strFilenameOutChanWav, "wb") as out_f:
-                    out_f.setnchannels(1)
-                    out_f.setsampwidth(2)  # number of bytes
-                    out_f.setframerate(44100)
-                    out_f.writeframesraw(data)
-
-    # song_info = self.recognize_from_file(fileNameFinal)
     # processRemote - end
 
     def recognize_from_file(fileName="out.wav"):
         seconds = 5
-        # fileName = "awaken-136824.mp3"
 
         directory = os.getcwd()
-        filePath = directory + '/mp3/' + fileName
+        filePath = directory + '/' + fileName
         print(filePath)
 
         r = FileReader(filePath)
