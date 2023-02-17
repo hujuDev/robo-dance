@@ -39,8 +39,7 @@ class SoundReceiverModule(naoqi.ALModule):
             self.naoPort = naoPort
             self.danceRoom = DanceRoom()
             self.outfile = None
-            self.aOutfile = [None] * (4 - 1)  # ASSUME max nbr channels = 4
-            self.seconds = 7
+            self.seconds = 5
         except BaseException, err:
             print("ERR: abcdk.naoqitools.SoundReceiverModule: loading error: %s" % str(err))
 
@@ -51,66 +50,61 @@ class SoundReceiverModule(naoqi.ALModule):
 
     def start(self):
         audio = naoqi.ALProxy("ALAudioDevice", self.strNaoIp, self.naoPort)
-        tts = naoqi.ALProxy("ALTextToSpeech", self.strNaoIp, self.naoPort)
         nNbrChannelFlag = 3  # ALL_Channels: 0,  AL::LEFTCHANNEL: 1, AL::RIGHTCHANNEL: 2; AL::FRONTCHANNEL: 3  or AL::REARCHANNEL: 4.
         nDeinterleave = 0
-        #TODO: see impl1.py, nSampleRate per mic is 16000
-        nSampleRate = 48000
+        nSampleRate = 16000
         audio.setClientPreferences(self.getName(), nSampleRate, nNbrChannelFlag,
                                    nDeinterleave)  # setting same as default generate a bug !?!
-        try:
-            while True:
-                audio.subscribe(self.getName())
-                print("INF: SoundReceiver: started!")
-                time.sleep(self.seconds)
-                audio.unsubscribe(self.getName())
-                song_info = self.recognize_from_file()
-                song_name = song_info.get('songname')
-                tts.say("Dancing to " + song_name)
-                if (song_name == "Disco_Disco"):
-                    self.danceRoom.disco_dance()
-                if (song_name == "Yoga"):
-                    self.danceRoom.yoga_dance()
-                if (song_name == "Metal"):
-                    self.danceRoom.headbang_dance()
-                #  ALMotion's angleInterpolationBezier function is a blocking call, so hopefully the loop should not continue until the dance is done
-                # TODO: start dancing the correct dance for the song
-                # TODO: after dance is finished, start listening again for next song
-        except KeyboardInterrupt:
-            print "Interrupted by user, shutting down"
+        audio.subscribe(self.getName())
+        print("INF: SoundReceiver: started!")
+
 
     def stop(self):
         print("INF: SoundReceiver: stopping...")
-        audio = naoqi.ALProxy("ALAudioDevice", self.strNaoIp, 9559)
         audio.unsubscribe(self.getName())
-        # self.convert_raw_to_wav()
-        print("INF: SoundReceiver: stopped!")
+        tts = naoqi.ALProxy("ALTextToSpeech", self.strNaoIp, self.naoPort)
+        audio = naoqi.ALProxy("ALAudioDevice", self.strNaoIp, 9559)
         if (self.outfile != None):
             self.outfile.close()
+            strFilenameOutChanWav = self.strFilenameOut.replace(".raw", ".wav")
+            with open(self.outfile, "rb") as inp_f:
+                data = inp_f.read()
+                out_f = wave.open(strFilenameOutChanWav, "wb")
+                out_f.setnchannels(1)
+                out_f.setsampwidth(2)  # number of bytes
+                out_f.setframerate(16000)
+                out_f.writeframesraw(data)
+                out_f.close()
+
+        song_info = self.recognize_from_file()
+        song_name = song_info.get('songname')
+        tts.say("Dancing to " + song_name)
+        if (song_name == "Disco_Disco"):
+            self.danceRoom.disco_dance()
+        if (song_name == "Yoga"):
+            self.danceRoom.yoga_dance()
+        if (song_name == "Metal"):
+            self.danceRoom.headbang_dance()
+            #  ALMotion's angleInterpolationBezier function is a blocking call, so hopefully the loop should not continue until the dance is done
+            # TODO: start dancing the correct dance for the song
+            # TODO: after dance is finished, start listening again for next song
+        # self.convert_raw_to_wav()
+        print("INF: SoundReceiver: stopped!")
 
     def processRemote(self, nbOfChannels, nbrOfSamplesByChannel, aTimeStamp, buffer):
         """
         This is THE method that receives all the sound buffers from the "ALAudioDevice" module
         """
         aSoundDataInterlaced = np.fromstring(str(buffer), dtype=np.int16)
-        #TODO: better hardcode nbOfChannels here?
-        aSoundData = np.reshape(aSoundDataInterlaced, (nbOfChannels, nbrOfSamplesByChannel), 'F')
+        aSoundData = np.reshape(aSoundDataInterlaced, (1, nbrOfSamplesByChannel), 'F') # nbOfChannels hardcoded to 1
 
         # save to file
-        strFilenameOut = "./out.raw"
-        print("INF: Writing sound to '%s'" % strFilenameOut)
-        self.outfile = open(strFilenameOut, "wb")
+        self.strFilenameOut = "./out.raw"
+        if (self.outfile == None):
+            print("INF: Writing sound to '%s'" % self.strFilenameOut)
+            self.outfile = open(self.strFilenameOut, "wb")
+
         aSoundData[0].tofile(self.outfile)  # wrote only one channel
-        strFilenameOutChanWav = strFilenameOut.replace(".raw", ".wav")
-        #TODO: müsste es nicht open(self.outfile, "rb") sein?
-        with open(strFilenameOut, "rb") as inp_f:
-            data = inp_f.read()
-            out_f = wave.open(strFilenameOutChanWav, "wb")
-            out_f.setnchannels(1)
-            out_f.setsampwidth(2)  # number of bytes
-            out_f.setframerate(48000)
-            out_f.writeframesraw(data)
-            out_f.close()
 
     # processRemote - end
 
@@ -146,9 +140,14 @@ def main():
                       help="Parent broker port. The port NAOqi is listening to",
                       dest="pport",
                       type="int")
+    parser.add_option("--seconds",
+                      help="Number of seconds that should be recorded by Nao",
+                      dest="seconds",
+                      type="int")
     parser.set_defaults(
         pip=NAO_IP,
-        pport=9559)
+        pport=9559,
+        seconds = 7)
 
     (opts, args_) = parser.parse_args()
     pip = opts.pip
@@ -169,7 +168,8 @@ def main():
     global SoundReceiver
     SoundReceiver = SoundReceiverModule("SoundReceiver", pip, pport)
     SoundReceiver.start()
-
+    time.sleep(opts.seconds)
+    print("%i seconds recorded...", opts.seconds)
     myBroker.shutdown()
     sys.exit(0)
 
