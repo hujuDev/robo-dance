@@ -1,7 +1,7 @@
 import os
 from libs.reader_file import FileReader
 
-def recognize_from_file(fileName = "disco_disco.mp3"):
+def recognize_from_file(fileName = "disco_disco.wav"):
     seconds = 5
     # fileName = "awaken-136824.mp3"
 

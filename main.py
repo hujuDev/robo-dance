@@ -20,6 +20,7 @@ import sys
 import os
 import wave
 from audio_recognition_system_py27.libs.reader_file import FileReader
+from danceroom import DanceRoom
 
 sys.path.insert(0, './audio_recognition_system_py27/libs')
 
@@ -30,11 +31,13 @@ class SoundReceiverModule(naoqi.ALModule):
     Your callback needs to be a method with two parameter (variable name, value).
     """
 
-    def __init__(self, strModuleName, strNaoIp):
+    def __init__(self, strModuleName, strNaoIp, naoPort):
         try:
             naoqi.ALModule.__init__(self, strModuleName)
             self.BIND_PYTHON(self.getName(), "callback")
             self.strNaoIp = strNaoIp
+            self.naoPort = naoPort
+            self.danceRoom = DanceRoom()
             self.outfile = None
             self.aOutfile = [None] * (4 - 1)  # ASSUME max nbr channels = 4
         except BaseException, err:
@@ -46,7 +49,8 @@ class SoundReceiverModule(naoqi.ALModule):
         self.stop()
 
     def start(self):
-        audio = naoqi.ALProxy("ALAudioDevice", self.strNaoIp, 9559)
+        audio = naoqi.ALProxy("ALAudioDevice", self.strNaoIp, self.naoPort)
+        tts = naoqi.ALProxy("ALTextToSpeech", self.strNaoIp, self.naoPort)
         nNbrChannelFlag = 3  # ALL_Channels: 0,  AL::LEFTCHANNEL: 1, AL::RIGHTCHANNEL: 2; AL::FRONTCHANNEL: 3  or AL::REARCHANNEL: 4.
         nDeinterleave = 0
         nSampleRate = 48000
@@ -59,7 +63,14 @@ class SoundReceiverModule(naoqi.ALModule):
             audio.unsubscribe(self.getName())
             song_info = self.recognize_from_file()
             song_name = song_info.get('songname')
-            # TODO: say the name of the song with tts
+            tts.say("Dancing to " + song_name)
+            if (song_name == "Disco_Disco"):
+                self.danceRoom.disco_dance()
+            if (song_name == "Yoga"):
+                self.danceRoom.yoga_dance()
+            if (song_name == "Metal"):
+                self.danceRoom.headbang_dance()
+            #  ALMotion's angleInterpolationBezier function is a blocking call, so hopefully the loop should not continue until the dance is done
             # TODO: start dancing the correct dance for the song
             # TODO: after dance is finished, start listening again for next song
 
@@ -94,6 +105,7 @@ class SoundReceiverModule(naoqi.ALModule):
             out_f.setframerate(48000)
             out_f.writeframesraw(data)
             out_f.close()
+
     # processRemote - end
 
     def recognize_from_file(fileName="out.wav"):
@@ -150,7 +162,7 @@ def main():
     # The name given to the constructor must be the name of the
     # variable
     global SoundReceiver
-    SoundReceiver = SoundReceiverModule("SoundReceiver", pip)
+    SoundReceiver = SoundReceiverModule("SoundReceiver", pip, pport)
     SoundReceiver.start()
 
     try:
