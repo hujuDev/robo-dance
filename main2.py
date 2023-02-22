@@ -21,9 +21,9 @@ import os
 import wave
 from audio_recognition_system_py27.libs.reader_file import FileReader
 from danceroom import DanceRoom
+import speech_recognition as asr
 
 sys.path.insert(0, './audio_recognition_system_py27/libs')
-
 
 class SoundReceiverModule(naoqi.ALModule):
     """
@@ -60,10 +60,16 @@ class SoundReceiverModule(naoqi.ALModule):
 
 
     def stop(self):
-        print("INF: SoundReceiver: stopping...")
-        audio.unsubscribe(self.getName())
-        tts = naoqi.ALProxy("ALTextToSpeech", self.strNaoIp, self.naoPort)
+        print("INF: SoundReceiver: recognizing song...")
         audio = naoqi.ALProxy("ALAudioDevice", self.strNaoIp, 9559)
+        audio.unsubscribe(self.getName())
+        self.write_outfile(self)
+        self.dance(self)
+            #  ALMotion's angleInterpolationBezier function is a blocking call, so hopefully the loop should not continue until the dance is done
+            # TODO: start dancing the correct dance for the song
+        print("INF: SoundReceiver: stopped!")
+
+    def write_outfile(self):
         if (self.outfile != None):
             self.outfile.close()
             strFilenameOutChanWav = self.strFilenameOut.replace(".raw", ".wav")
@@ -75,21 +81,25 @@ class SoundReceiverModule(naoqi.ALModule):
                 out_f.setframerate(16000)
                 out_f.writeframesraw(data)
                 out_f.close()
-
+    
+    def dance(self):
+        tts = naoqi.ALProxy("ALTextToSpeech", self.strNaoIp, self.naoPort)
         song_info = self.recognize_from_file()
         song_name = song_info.get('songname')
-        tts.say("Dancing to " + song_name)
+        tts.say("Song recognized, dancing to " + song_name)
+        time.sleep(1)
         if (song_name == "Disco_Disco"):
             self.danceRoom.disco_dance()
-        if (song_name == "Yoga"):
+        elif (song_name == "Yoga"):
             self.danceRoom.yoga_dance()
-        if (song_name == "Metal"):
+        elif (song_name == "Metal"):
             self.danceRoom.headbang_dance()
-            #  ALMotion's angleInterpolationBezier function is a blocking call, so hopefully the loop should not continue until the dance is done
-            # TODO: start dancing the correct dance for the song
-            # TODO: after dance is finished, start listening again for next song
-        # self.convert_raw_to_wav()
-        print("INF: SoundReceiver: stopped!")
+        elif (song_name == "Waltzer"):
+            self.danceRoom.headbang_dance()
+        elif (song_name == "Hey ya"):
+            self.danceRoom.headbang_dance()
+        elif (song_name == "Feeling Good"):
+            self.danceRoom.headbang_dance()
 
     def processRemote(self, nbOfChannels, nbrOfSamplesByChannel, aTimeStamp, buffer):
         """
