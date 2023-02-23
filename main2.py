@@ -55,6 +55,9 @@ class SoundReceiverModule(naoqi.ALModule):
         nSampleRate = 16000
         audio.setClientPreferences(self.getName(), nSampleRate, nNbrChannelFlag,
                                    nDeinterleave)  # setting same as default generate a bug !?!
+        tts = naoqi.ALProxy("ALTextToSpeech", self.strNaoIp, self.naoPort)
+        tts.say("Hit me!")
+        time.sleep(2)
         audio.subscribe(self.getName())
         print("INF: SoundReceiver: started!")
 
@@ -73,7 +76,7 @@ class SoundReceiverModule(naoqi.ALModule):
         if (self.outfile != None):
             self.outfile.close()
             strFilenameOutChanWav = self.strFilenameOut.replace(".raw", ".wav")
-            with open(self.outfile, "rb") as inp_f:
+            with open("./out.raw", "rb") as inp_f:
                 data = inp_f.read()
                 out_f = wave.open(strFilenameOutChanWav, "wb")
                 out_f.setnchannels(1)
@@ -81,7 +84,7 @@ class SoundReceiverModule(naoqi.ALModule):
                 out_f.setframerate(16000)
                 out_f.writeframesraw(data)
                 out_f.close()
-    
+
     def dance(self):
         tts = naoqi.ALProxy("ALTextToSpeech", self.strNaoIp, self.naoPort)
         song_info = self.recognize_from_file()
