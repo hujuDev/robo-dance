@@ -108,7 +108,7 @@ class SoundReceiverModule(naoqi.ALModule):
 
     # processRemote - end
 
-    def recognize_from_file(fileName="out.wav"):
+    def recognize_from_file(self, fileName="out.wav"):
         seconds = 5
 
         directory = os.getcwd()
