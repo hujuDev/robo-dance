@@ -1308,6 +1308,8 @@ class DanceRoom:
         try:
             motion = naoqi.ALProxy("ALMotion", "10.0.7.101", 9559)
             motion.wakeUp()
+            motion.setStiffnesses("Body", 1.0)
+            motion.moveInit()
             motion.angleInterpolationBezier(names, times, keys)
         except BaseException, err:
             print(err)
