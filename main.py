@@ -11,11 +11,7 @@ from itertools import izip_longest
 from termcolor import colored
 
 from danceroom import DanceRoom
-from audio_recognition_system_py27.libs.reader_file import FileReader
-from audio_recognition_system_py27.recognize_from_file import FileRecognizer
-from audio_recognition_system_py27.libs import fingerprint
-from audio_recognition_system_py27.libs.config import get_config
-from audio_recognition_system_py27.libs.db_sqlite import SqliteDatabase
+import python3_runner
 
 sys.path.insert(0, './audio_recognition_system_py27/libs')
 
@@ -67,14 +63,11 @@ class SoundReceiverModule(naoqi.ALModule):
         audio = naoqi.ALProxy("ALAudioDevice", self.strNaoIp, 9559)
         audio.unsubscribe(self.getName())
         self.write_outfile()
-        self.dance()
-            #  ALMotion's angleInterpolationBezier function is a blocking call, so hopefully the loop should not continue until the dance is done
-            # TODO: start dancing the correct dance for the song
+        song_name = self.recognize_from_file()
+        self.dance(song_name)
         print("INF: SoundReceiver: stopped!")
 
     def write_outfile(self):
-        # if (self.outfile != None):
-        # self.outfile.close()
         strFilenameOutChanWav = self.strFilenameOut.replace(".raw", ".wav")
         with open("./out.raw", "rb") as inp_f:
             data = inp_f.read()
@@ -85,29 +78,24 @@ class SoundReceiverModule(naoqi.ALModule):
             out_f.writeframesraw(data)
             out_f.close()
 
-    def dance(self):
+    def dance(self, song_name):
         tts = naoqi.ALProxy("ALTextToSpeech", self.strNaoIp, self.naoPort)
-        song_info = self.recognize_from_file()
-        if song_info:
-            song_name = song_info.get('SONG_NAME')
-            tts.say("Song recognized, dancing to " + song_name)
-            time.sleep(1)
-            if (song_name == "Disco_Disco"):
-                self.danceRoom.disco_dance()
-            elif (song_name == "Yoga"):
-                self.danceRoom.yoga_dance()
-            elif (song_name == "Metal"):
-                self.danceRoom.headbang_dance()
-            elif (song_name == "Waltzer"):
-                self.danceRoom.headbang_dance()
-            elif (song_name == "Hey ya"):
-                self.danceRoom.headbang_dance()
-            elif (song_name == "Feeling Good"):
-                self.danceRoom.headbang_dance()
-            else:
-                self.danceRoom.headbang_dance()
+        tts.say("Song recognized, dancing to " + song_name)
+        time.sleep(1)
+        if (song_name == "CHRISTIAN STEIFFEN Ich fühl mich Disco (Filmversion)"):
+            self.danceRoom.disco_dance()
+        elif (song_name == "Single Ladies (Put a Ring on It)"):
+            self.danceRoom.yoga_dance()
+        elif (song_name == "Stayin' Alive"):
+            self.danceRoom.headbang_dance()
+        elif (song_name == "YMCA"):
+            self.danceRoom.headbang_dance()
+        elif (song_name == "Night Fever - From \"Saturday Night Fever\" Soundtrack"):
+            self.danceRoom.headbang_dance()
+        elif (song_name == "U Can't Touch This"):
+            self.danceRoom.headbang_dance()
         else:
-            tts.say("No song recognized")
+            self.danceRoom.headbang_dance()
 
     def processRemote(self, nbOfChannels, nbrOfSamplesByChannel, aTimeStamp, buffer):
         """
@@ -116,20 +104,18 @@ class SoundReceiverModule(naoqi.ALModule):
         aSoundDataInterlaced = np.fromstring(str(buffer), dtype=np.int16)
         aSoundData = np.reshape(aSoundDataInterlaced, (1, nbrOfSamplesByChannel), 'F') # nbOfChannels hardcoded to 1
 
-        # save to file
-        # if (self.outfile == None):
         print("INF: Writing sound to '%s'" % self.strFilenameOut)
-        # else:
-        #     print("Outfile found")
-
         aSoundData[0].tofile(self.outfile)  # wrote only one channel
 
     # processRemote - end
 
     def recognize_from_file(self):
-        fileRecognizer = FileRecognizer(os.getcwd(), "out.wav")
-        song_info = fileRecognizer.start()
-        return song_info
+        python_path = '/home/just/miniconda3/envs/abracadabra/bin/python'
+        script_path = 'abracadabra/python2_interface.py'
+        runner = python3_runner.PythonRunner(python_path, script_path)
+
+        result = runner.run_script('recognise', 'out2.wav')
+        return result
 
 
     def version(self):

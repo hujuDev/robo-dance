@@ -18,7 +18,7 @@ def setup():
 def list_songs():
     # iterate over all songs in db and print them
     for song in abracadabra.storage.list_songs():
-        print(song)
+        print(song[-2] + ": ", song)
 
 
 def recognise(filename):
@@ -26,7 +26,7 @@ def recognise(filename):
     directory = os.getcwd()
     filepath = os.path.join(directory, "recordings", filename)
 
-    print(abracadabra.recognise.recognise_song(filepath))
+    print(abracadabra.recognise.recognise_song(filepath)[-1])
 
 
 if __name__ == '__main__':
