@@ -20,6 +20,8 @@ from libs.visualiser_plot import VisualiserPlot as visual_plot
 from libs.db_sqlite import SqliteDatabase
 from multiprocessing import Process
 import io
+
+
 # from libs.db_mongo import MongoDatabase
 
 class FileRecognizer:
@@ -171,13 +173,8 @@ class FileRecognizer:
         filePath = self.directory + '/' + self.fileName
         reader = FileReader(filePath)
 
-
         msg = ' * file has been read'
         print colored(msg, attrs=['dark'])
-
-
-
-
 
         # data = self.get_data_from_audio_file(self.filePath)
         data = self.get_data_from_audio_file_sf(filePath)
@@ -225,4 +222,3 @@ class FileRecognizer:
             msg = ' ** not matches found at all'
             print colored(msg, 'red')
             return None
-
