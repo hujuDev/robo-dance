@@ -12,7 +12,7 @@ from termcolor import colored
 
 from danceroom import DanceRoom
 from audio_recognition_system_py27.libs.reader_file import FileReader
-from audio_recognition_system_py27.recognize_from_file3 import FileRecognizer
+from audio_recognition_system_py27.recognize_from_file import FileRecognizer
 from audio_recognition_system_py27.libs import fingerprint
 from audio_recognition_system_py27.libs.config import get_config
 from audio_recognition_system_py27.libs.db_sqlite import SqliteDatabase
