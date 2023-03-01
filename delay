@@ -1,0 +1,24 @@
+import numpy as np
+
+# list = list of ints/floats
+# start =  a start int with 1 as the first
+# end = end int with len(list) as the max
+# time = wanted delay per keyframe
+
+
+def delay(list, start, end, time):
+    interval = end - start + 1
+    pre = [] + [0] * start
+    mid = np.arange(time, interval * time, time).tolist()
+    end = [] + [interval * time] * (len(list) - end)
+    full = pre + mid + end
+    new = []
+    for i in range(0, len(list)):
+        new.append(list[i] + full[i])
+    return new
+
+
+""" old = [0.28, 0.46, 0.78, 1.18, 1.58, 1.78, 1.98, 2.12, 2.44, 2.58, 2.78, 2.98, 3.38, 3.48, 4.08, 4.18, 4.38, 4.58, 4.98, 5.18, 5.48, 5.98, 6.18, 6.48, 6.98, 7.48, 7.88, 8.28, 8.58, 8.78, 9.12, 9.38, 9.6, 10.08, 10.38, 10.68, 10.98, 11.28, 11.58, 11.88, 12.18]
+
+    print(delay(old, 0, 8, 0.1))
+"""
