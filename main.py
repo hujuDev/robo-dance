@@ -4,11 +4,8 @@ import naoqi
 import numpy as np
 import time
 import sys
-import os
 import wave
 
-from itertools import izip_longest
-from termcolor import colored
 
 from danceroom import DanceRoom
 import python3_runner
@@ -16,7 +13,7 @@ import python3_runner
 sys.path.insert(0, './audio_recognition_system_py27/libs')
 
 
-NAO_IP = "10.0.7.101"
+NAO_IP = "10.0.7.100"
 
 
 class SoundReceiverModule(naoqi.ALModule):
@@ -31,7 +28,7 @@ class SoundReceiverModule(naoqi.ALModule):
             self.BIND_PYTHON(self.getName(), "callback")
             self.strNaoIp = strNaoIp
             self.naoPort = naoPort
-            self.danceRoom = DanceRoom()
+            self.danceRoom = DanceRoom(strNaoIp, naoPort)
             self.outfile = None
             self.seconds = 5
             self.strFilenameOut = "./out.raw"
@@ -44,6 +41,7 @@ class SoundReceiverModule(naoqi.ALModule):
         self.stop()
 
     def start(self):
+        self.danceRoom.posture.goToPosture("StandInit", 0.5)
         audio = naoqi.ALProxy("ALAudioDevice", self.strNaoIp, self.naoPort)
         nNbrChannelFlag = 3  # ALL_Channels: 0,  AL::LEFTCHANNEL: 1, AL::RIGHTCHANNEL: 2; AL::FRONTCHANNEL: 3  or AL::REARCHANNEL: 4.
         nDeinterleave = 0
@@ -64,7 +62,8 @@ class SoundReceiverModule(naoqi.ALModule):
         audio.unsubscribe(self.getName())
         self.write_outfile()
         song_name = self.recognize_from_file()
-        self.dance(song_name)
+        print("song_name type: ", song_name.encode('ascii', 'replace'))
+        self.dance(song_name.encode('ascii', 'replace'))
         print("INF: SoundReceiver: stopped!")
 
     def write_outfile(self):
@@ -80,22 +79,11 @@ class SoundReceiverModule(naoqi.ALModule):
 
     def dance(self, song_name):
         tts = naoqi.ALProxy("ALTextToSpeech", self.strNaoIp, self.naoPort)
+        print("In Dance function")
         tts.say("Song recognized, dancing to " + song_name)
         time.sleep(1)
-        if (song_name == "CHRISTIAN STEIFFEN Ich fühl mich Disco (Filmversion)"):
-            self.danceRoom.disco_dance()
-        elif (song_name == "Single Ladies (Put a Ring on It)"):
-            self.danceRoom.yoga_dance()
-        elif (song_name == "Stayin' Alive"):
-            self.danceRoom.headbang_dance()
-        elif (song_name == "YMCA"):
-            self.danceRoom.headbang_dance()
-        elif (song_name == "Night Fever - From \"Saturday Night Fever\" Soundtrack"):
-            self.danceRoom.headbang_dance()
-        elif (song_name == "U Can't Touch This"):
-            self.danceRoom.headbang_dance()
-        else:
-            self.danceRoom.headbang_dance()
+        names, times, keys = self.danceRoom.load_dance(song_name)
+        self.danceRoom.perform_dance(names, times, keys)
 
     def processRemote(self, nbOfChannels, nbrOfSamplesByChannel, aTimeStamp, buffer):
         """
@@ -114,7 +102,7 @@ class SoundReceiverModule(naoqi.ALModule):
         script_path = 'abracadabra/python2_interface.py'
         runner = python3_runner.PythonRunner(python_path, script_path)
 
-        result = runner.run_script('recognise', 'out2.wav')
+        result = runner.run_script('recognise', 'out.wav')
         return result
 
 
@@ -144,7 +132,7 @@ def main():
     parser.set_defaults(
         pip=NAO_IP,
         pport=9559,
-        seconds = 30)
+        seconds = 5)
 
     (opts, args_) = parser.parse_args()
     pip = opts.pip

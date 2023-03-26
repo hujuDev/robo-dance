@@ -24,7 +24,8 @@ def list_songs():
 def recognise(filename):
     # get current working directory
     directory = os.getcwd()
-    filepath = os.path.join(directory, "recordings", filename)
+    # filepath = os.path.join(directory, "recordings", filename)
+    filepath = os.path.join(directory, filename)
 
     print(abracadabra.recognise.recognise_song(filepath)[-1])
 

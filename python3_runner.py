@@ -27,6 +27,6 @@ if __name__ == '__main__':
     runner = PythonRunner(python_path, script_path)
 
     # result = runner.run_script('setup')
-    result = runner.run_script('list_songs')
-    # result = runner.run_script('recognise', 'out2.wav')
+    # result = runner.run_script('list_songs')
+    result = runner.run_script('recognise', 'out.wav')
     print(result)
