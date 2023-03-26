@@ -9392,8 +9392,10 @@ class DanceRoom:
         return names, times, keys
 
     def load_dance(self, song_name):
-        names, times, keys, speed = [], [], [], 1.0
-        if song_name == "macarena":
+        names, times, keys, speed, repetitions = [], [], [], 1.0, 1
+        # TODO: adjust speed and repetitions for each song
+
+        if song_name == "Macarena":
             speed = 0.4
             names, times, keys= self.macarena() # tested with slower speed
         elif (song_name == "Ich fuehl mich Disco"):
@@ -9407,6 +9409,7 @@ class DanceRoom:
         elif (song_name == "Gangnam Style"):
             names, times, keys= self.gangnam_style()
         elif (song_name == "Thriller"):
+            repetitions = 2
             names, times, keys= self.thriller()
         elif (song_name == "Mister Roboto"):
             names, times, keys= self.mr_roboto()
@@ -9416,7 +9419,7 @@ class DanceRoom:
         for i in range(len(times)):
             for j in range(len(times[i])):
                 times[i][j] = times[i][j] * (1 / speed)
-        return names, times, keys
+        return names, times, keys, repetitions
 
     def perform_dance_from_keyframes(self, names, times, keys):
         try:
@@ -9431,12 +9434,13 @@ class DanceRoom:
             print(err)
 
     def perform_dance(self, song_name):
-        names, times, keys = self.load_dance(song_name)
-        self.perform_dance_from_keyframes(names, times, keys)
+        names, times, keys, repetitions = self.load_dance(song_name)
+        for i in range(repetitions):
+            self.perform_dance_from_keyframes(names, times, keys)
 
     def main(self):
         self.posture.goToPosture("StandInit", 0.5)
-        self.perform_dance("macarena")
+        self.perform_dance("Macarena")
 
 
 if __name__ == "__main__":
