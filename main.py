@@ -61,9 +61,9 @@ class SoundReceiverModule(naoqi.ALModule):
         audio = naoqi.ALProxy("ALAudioDevice", self.strNaoIp, 9559)
         audio.unsubscribe(self.getName())
         self.write_outfile()
-        song_name = self.recognize_from_file()
-        print("song_name type: ", song_name.encode('ascii', 'replace'))
-        self.dance(song_name.encode('ascii', 'replace'))
+        song_info = self.recognize_from_file()
+        print("song_name: ", song_info.get('song_name'))
+        self.dance(song_info)
         print("INF: SoundReceiver: stopped!")
 
     def write_outfile(self):
@@ -77,13 +77,17 @@ class SoundReceiverModule(naoqi.ALModule):
             out_f.writeframesraw(data)
             out_f.close()
 
-    def dance(self, song_name):
+    def dance(self, song_info):
         tts = naoqi.ALProxy("ALTextToSpeech", self.strNaoIp, self.naoPort)
         print("In Dance function")
-        tts.say("Song recognized, dancing to " + song_name)
+        tts.say("Song recognized, dancing to " + song_info.get('song_name'))
         time.sleep(1)
-        names, times, keys = self.danceRoom.load_dance(song_name)
-        self.danceRoom.perform_dance(names, times, keys)
+        if song_info.get('score') < 3:
+            tts.say("Not recognizing the song, please try again")
+            time.sleep(1)
+        else:
+            names, times, keys = self.danceRoom.load_dance(song_info.get('song_name'))
+            self.danceRoom.perform_dance(names, times, keys)
 
     def processRemote(self, nbOfChannels, nbrOfSamplesByChannel, aTimeStamp, buffer):
         """
@@ -102,7 +106,11 @@ class SoundReceiverModule(naoqi.ALModule):
         script_path = 'abracadabra/python2_interface.py'
         runner = python3_runner.PythonRunner(python_path, script_path)
 
-        result = runner.run_script('recognise', 'out.wav')
+        result = runner.run_script('recognise', 'out.wav').splitlines()
+        result = {
+            'song_name': result[0].encode('ascii', 'replace'),
+            'score': result[1].encode('ascii', 'replace')
+        }
         return result
 
 

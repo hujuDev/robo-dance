@@ -118,7 +118,7 @@ def best_match(matches):
         if score > best_score:
             best_score = score
             matched_song = song_id
-    return matched_song
+    return matched_song, best_score
 
 
 def recognise_song(filename):
@@ -129,15 +129,15 @@ def recognise_song(filename):
 
     :param filename: Path of file to be recognised.
     :returns: :func:`~abracadabra.recognise.get_song_info` result for matched song or None.
-    :rtype: tuple(str, str, str)
+    :rtype: tuple(str, str, str, int)
     """
     hashes = fingerprint_file(filename)
     matches = get_matches(hashes)
-    matched_song = best_match(matches)
+    matched_song, score = best_match(matches)
     info = get_info_for_song_id(matched_song)
     if info is not None:
-        return info
-    return matched_song
+        return info + (score,)
+    return matched_song + (score,)
 
 
 def listen_to_song(filename=None):
@@ -154,7 +154,7 @@ def listen_to_song(filename=None):
     audio = record_audio(filename=filename)
     hashes = fingerprint_audio(audio)
     matches = get_matches(hashes)
-    matched_song = best_match(matches)
+    matched_song, score = best_match(matches)
     info = get_info_for_song_id(matched_song)
     if info is not None:
         return info

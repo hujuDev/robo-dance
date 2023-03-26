@@ -8,11 +8,15 @@ import sys
 
 def setup():
     abracadabra.storage.setup_db()
-    # loop over files in mp3 directory and register all songs
+    # loop over files in mp3 directory and register all new songs
     dir = "song_db"
     for filename in os.listdir(dir):
         if filename.endswith(".mp3") and not abracadabra.recognise.song_in_db(dir + "/" + filename):
             abracadabra.recognise.register_song(dir + "/" + filename)
+
+def resetup():
+    abracadabra.storage.drop_tables()
+    setup()
 
 
 def list_songs():
@@ -27,6 +31,7 @@ def recognise(filename):
     # filepath = os.path.join(directory, "recordings", filename)
     filepath = os.path.join(directory, filename)
 
+    print(abracadabra.recognise.recognise_song(filepath)[-2])
     print(abracadabra.recognise.recognise_song(filepath)[-1])
 
 

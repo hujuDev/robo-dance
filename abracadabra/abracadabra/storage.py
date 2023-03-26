@@ -34,6 +34,14 @@ def setup_db():
         # reduce load at a checkpoint and reduce chance of a timeout
         c.execute("PRAGMA wal_autocheckpoint=300")
 
+def drop_tables():
+    """Create the database and tables.
+
+    To be run once through an interactive shell.
+    """
+    with get_cursor() as (conn, c):
+        c.execute("DROP TABLE IF EXISTS hash")
+        c.execute("DROP TABLE IF EXISTS song_info")
 
 def checkpoint_db():
     with get_cursor() as (conn, c):

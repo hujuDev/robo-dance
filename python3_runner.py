@@ -20,13 +20,23 @@ class PythonRunner:
         # Return the result
         return result
 
+    def recognize_from_file(self):
+        result = self.run_script('recognise', 'out.wav').splitlines()
+        result = {
+            'song_name': result[0].encode('ascii', 'replace'),
+            'score': result[1].encode('ascii', 'replace')
+        }
+        return result
 
 if __name__ == '__main__':
     python_path = '/home/just/miniconda3/envs/abracadabra/bin/python'
     script_path = 'abracadabra/python2_interface.py'
     runner = PythonRunner(python_path, script_path)
 
+    # result = runner.run_script('resetup')
     # result = runner.run_script('setup')
     # result = runner.run_script('list_songs')
-    result = runner.run_script('recognise', 'out.wav')
+    # result = runner.run_script('recognise', 'out.wav').splitlines()
+    result = runner.recognize_from_file()
+
     print(result)
