@@ -9421,6 +9421,7 @@ class DanceRoom:
     def perform_dance_from_keyframes(self, names, times, keys):
         try:
             motion = naoqi.ALProxy("ALMotion", self.strNaoIp, self.naoPort)
+            # TODO: Look into Choreographe code for smart stiffness and fall manager
             motion.wakeUp()
             motion.moveInit()
             motion.setStiffnesses("Body", 0.5)
