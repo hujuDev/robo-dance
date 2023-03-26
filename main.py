@@ -86,8 +86,7 @@ class SoundReceiverModule(naoqi.ALModule):
             tts.say("Not recognizing the song, please try again")
             time.sleep(1)
         else:
-            names, times, keys = self.danceRoom.load_dance(song_info.get('song_name'))
-            self.danceRoom.perform_dance(names, times, keys)
+            self.danceRoom.perform_dance(song_info.get('song_name'))
 
     def processRemote(self, nbOfChannels, nbrOfSamplesByChannel, aTimeStamp, buffer):
         """

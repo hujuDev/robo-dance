@@ -9410,13 +9410,15 @@ class DanceRoom:
             names, times, keys= self.thriller()
         elif (song_name == "Mister Roboto"):
             names, times, keys= self.mr_roboto()
+        elif (song_name == "dab"):
+            names, times, keys= self.dab()
 
         for i in range(len(times)):
             for j in range(len(times[i])):
                 times[i][j] = times[i][j] * (1 / speed)
         return names, times, keys
 
-    def perform_dance(self, names, times, keys):
+    def perform_dance_from_keyframes(self, names, times, keys):
         try:
             motion = naoqi.ALProxy("ALMotion", self.strNaoIp, self.naoPort)
             motion.wakeUp()
@@ -9426,6 +9428,10 @@ class DanceRoom:
             self.posture.goToPosture("StandInit", 0.5)
         except BaseException, err:
             print(err)
+
+    def perform_dance(self, song_name):
+        names, times, keys = self.load_dance(song_name)
+        self.perform_dance_from_keyframes(names, times, keys)
 
     def main(self):
         names, times, keys = self.load_dance("macarena")
