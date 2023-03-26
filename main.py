@@ -102,7 +102,7 @@ class SoundReceiverModule(naoqi.ALModule):
 
     def recognize_from_file(self):
         python_path = '/home/just/miniconda3/envs/abracadabra/bin/python'
-        script_path = 'abracadabra/python2_interface.py'
+        script_path = 'abracadabra/abracadabra_interface_for_python2.py'
         runner = python3_runner.PythonRunner(python_path, script_path)
 
         result = runner.run_script('recognise', 'out.wav').splitlines()

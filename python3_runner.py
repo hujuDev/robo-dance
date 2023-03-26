@@ -30,7 +30,7 @@ class PythonRunner:
 
 if __name__ == '__main__':
     python_path = '/home/just/miniconda3/envs/abracadabra/bin/python'
-    script_path = 'abracadabra/python2_interface.py'
+    script_path = 'abracadabra/abracadabra_interface_for_python2.py'
     runner = PythonRunner(python_path, script_path)
 
     # result = runner.run_script('resetup')
