@@ -9435,8 +9435,8 @@ class DanceRoom:
         self.perform_dance_from_keyframes(names, times, keys)
 
     def main(self):
-        names, times, keys = self.load_dance("macarena")
-        print (names, times, keys)
+        self.posture.goToPosture("StandInit", 0.5)
+        self.perform_dance("macarena")
 
 
 if __name__ == "__main__":
