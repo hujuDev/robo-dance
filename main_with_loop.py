@@ -61,8 +61,8 @@ class SoundReceiverModule(naoqi.ALModule):
             self.stop_listening()
 
     def start_listening(self):
-        self.tts.say("Hit me! baby")
-        time.sleep(2)
+        self.tts.say("Hit me!")
+        time.sleep(1)
         self.outfile = open(self.strFilenameOut, "wb")
         self.audio.subscribe(self.getName())
         print("INF: SoundReceiver: started!")
@@ -97,7 +97,6 @@ class SoundReceiverModule(naoqi.ALModule):
         time.sleep(1)
         if song_info.get('score') < 3:
             self.tts.say("Not recognizing the song, please try again")
-            time.sleep(1)
         else:
             self.danceRoom.perform_dance(song_info.get('song_name'))
 
