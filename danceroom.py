@@ -6,6 +6,7 @@ class DanceRoom:
         self.strNaoIp = strNaoIp
         self.naoPort = naoPort
         self.posture = naoqi.ALProxy("ALRobotPosture", self.strNaoIp, self.naoPort)
+        self.motion = naoqi.ALProxy("ALMotion", self.strNaoIp, self.naoPort)
 
     def disco_dance(self):
         names = list()
@@ -9423,12 +9424,11 @@ class DanceRoom:
 
     def perform_dance_from_keyframes(self, names, times, keys):
         try:
-            motion = naoqi.ALProxy("ALMotion", self.strNaoIp, self.naoPort)
             # TODO: Look into Choreographe code for smart stiffness and fall manager
-            motion.wakeUp()
-            motion.moveInit()
-            motion.setStiffnesses("Body", 0.5)
-            motion.angleInterpolationBezier(names, times, keys)
+            self.motion.wakeUp()
+            self.motion.moveInit()
+            self.motion.setStiffnesses("Body", 0.5)
+            self.motion.angleInterpolationBezier(names, times, keys)
             self.posture.goToPosture("StandInit", 0.5)
         except BaseException, err:
             print(err)
