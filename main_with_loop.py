@@ -7,13 +7,13 @@ import sys
 import wave
 
 
-from danceroom import DanceRoom
+from danceroom_loop import DanceRoom
 import python3_runner
 
 sys.path.insert(0, './audio_recognition_system_py27/libs')
 
 
-NAO_IP = "10.0.7.100"
+NAO_IP = "10.0.7.101"
 
 
 class SoundReceiverModule(naoqi.ALModule):
@@ -43,15 +43,17 @@ class SoundReceiverModule(naoqi.ALModule):
         self.stop()
 
     def start(self):
+        self.init_modules()
+
+        self.dance_loop()
+
+    def init_modules(self):
         self.audio = naoqi.ALProxy("ALAudioDevice", self.strNaoIp, self.naoPort)
         self.tts = naoqi.ALProxy("ALTextToSpeech", self.strNaoIp, self.naoPort)
-
         nNbrChannelFlag = 3  # ALL_Channels: 0,  AL::LEFTCHANNEL: 1, AL::RIGHTCHANNEL: 2; AL::FRONTCHANNEL: 3  or AL::REARCHANNEL: 4.
         nDeinterleave = 0
         nSampleRate = 16000
         self.audio.setClientPreferences(self.getName(), nSampleRate, nNbrChannelFlag, nDeinterleave)
-
-        self.dance_loop()
 
     def dance_loop(self):
         while True:
@@ -61,8 +63,9 @@ class SoundReceiverModule(naoqi.ALModule):
             self.stop_listening()
 
     def start_listening(self):
-        self.tts.say("Hit me!")
-        time.sleep(1)
+        self.init_modules()
+        self.tts.say("Hit me! baby")
+        time.sleep(2)
         self.outfile = open(self.strFilenameOut, "wb")
         self.audio.subscribe(self.getName())
         print("INF: SoundReceiver: started!")
@@ -78,7 +81,7 @@ class SoundReceiverModule(naoqi.ALModule):
 
     def stop(self):
         self.tts.say("Thank you for watching me dance!")
-        self.danceRoom.perform_dance('dab')
+        # self.danceRoom.perform_dance('dab')
 
     def write_outfile(self):
         strFilenameOutChanWav = self.strFilenameOut.replace(".raw", ".wav")
@@ -93,11 +96,13 @@ class SoundReceiverModule(naoqi.ALModule):
 
     def dance(self, song_info):
         print("In Dance function")
-        self.tts.say("Song recognized, dancing to " + song_info.get('song_name'))
         time.sleep(1)
-        if song_info.get('score') < 3:
+        print("Score: ", song_info.get('score'))
+        if song_info.get('score') < 4:
             self.tts.say("Not recognizing the song, please try again")
+            time.sleep(1)
         else:
+            self.tts.say("Song recognized, dancing to " + song_info.get('song_name'))
             self.danceRoom.perform_dance(song_info.get('song_name'))
 
     def processRemote(self, nbOfChannels, nbrOfSamplesByChannel, aTimeStamp, buffer):
@@ -120,7 +125,7 @@ class SoundReceiverModule(naoqi.ALModule):
         result = runner.run_script('recognise', 'out.wav').splitlines()
         result = {
             'song_name': result[0].encode('ascii', 'replace'),
-            'score': result[1].encode('ascii', 'replace')
+            'score': int(result[1].encode('ascii', 'replace'))
         }
         return result
 
@@ -151,7 +156,7 @@ def main():
     parser.set_defaults(
         pip=NAO_IP,
         pport=9559,
-        seconds = 5)
+        seconds = 8)
 
     (opts, args_) = parser.parse_args()
     pip = opts.pip

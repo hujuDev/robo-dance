@@ -30,9 +30,12 @@ def recognise(filename):
     directory = os.getcwd()
     # filepath = os.path.join(directory, "recordings", filename)
     filepath = os.path.join(directory, filename)
-
-    print(abracadabra.recognise.recognise_song(filepath)[-2])
-    print(abracadabra.recognise.recognise_song(filepath)[-1])
+    if (abracadabra.recognise.recognise_song(filepath) == None):
+        print("None")
+        print(1)
+    else:
+        print(abracadabra.recognise.recognise_song(filepath)[-2])
+        print(abracadabra.recognise.recognise_song(filepath)[-1])
 
 
 if __name__ == '__main__':

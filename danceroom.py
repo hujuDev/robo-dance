@@ -6,7 +6,7 @@ class DanceRoom:
         self.strNaoIp = strNaoIp
         self.naoPort = naoPort
         self.posture = naoqi.ALProxy("ALRobotPosture", self.strNaoIp, self.naoPort)
-        self.motion = naoqi.ALProxy("ALMotion", self.strNaoIp, self.naoPort)
+        # self.motion = naoqi.ALProxy("ALMotion", self.strNaoIp, self.naoPort)
 
     def disco_dance(self):
         names = list()
@@ -9396,26 +9396,28 @@ class DanceRoom:
         names, times, keys, speed, repetitions = [], [], [], 1.0, 1
         # TODO: adjust speed and repetitions for each song
 
-        if song_name == "Macarena":
-            speed = 0.4
-            names, times, keys= self.macarena() # tested with slower speed
-        elif (song_name == "Ich fuehl mich Disco"):
-            names, times, keys= self.arms_up()
+        if (song_name == "Ich fuehl mich Disco"):
+            names, times, keys= self.disco_dance()
         elif (song_name == "Stayin' Alive"):
+            repetitions = 4
             names, times, keys= self.staying_alive()
         elif (song_name == "YMCA"):
             names, times, keys= self.ymca()  # Not tested yet
-        elif (song_name == "U Can't Touch This"):
-            names, times, keys= self.hammer_time()
-        elif (song_name == "Gangnam Style"):
+        elif (song_name == "Gangnam style"):
+            speed = 0.9
             names, times, keys= self.gangnam_style()
         elif (song_name == "Thriller"):
             repetitions = 2
             names, times, keys= self.thriller()
         elif (song_name == "Mister Roboto"):
+            speed = 0.7
+            repetitions = 3
             names, times, keys= self.mr_roboto()
         elif (song_name == "dab"):
+            speed = 0.75
             names, times, keys= self.dab()
+        else:
+            names, times, keys= self.disco_dance()
 
         for i in range(len(times)):
             for j in range(len(times[i])):
@@ -9424,11 +9426,12 @@ class DanceRoom:
 
     def perform_dance_from_keyframes(self, names, times, keys):
         try:
+            motion = naoqi.ALProxy("ALMotion", self.strNaoIp, self.naoPort)
             # TODO: Look into Choreographe code for smart stiffness and fall manager
-            self.motion.wakeUp()
-            self.motion.moveInit()
-            self.motion.setStiffnesses("Body", 0.5)
-            self.motion.angleInterpolationBezier(names, times, keys)
+            motion.wakeUp()
+            motion.moveInit()
+            motion.setSmartStiffnessEnabled(True)
+            motion.angleInterpolationBezier(names, times, keys)
             self.posture.goToPosture("StandInit", 0.5)
         except BaseException, err:
             print(err)
@@ -9440,8 +9443,8 @@ class DanceRoom:
 
     def main(self):
         self.posture.goToPosture("StandInit", 0.5)
-        self.perform_dance("Macarena")
+        self.perform_dance("Ich")
 
 
 if __name__ == "__main__":
-    DanceRoom.main(DanceRoom("10.0.7.100", 9559))
+    DanceRoom.main(DanceRoom("10.0.7.101", 9559))

@@ -13,7 +13,7 @@ import python3_runner
 sys.path.insert(0, './audio_recognition_system_py27/libs')
 
 
-NAO_IP = "10.0.7.100"
+NAO_IP = "10.0.7.101"
 
 
 class SoundReceiverModule(naoqi.ALModule):
@@ -80,12 +80,13 @@ class SoundReceiverModule(naoqi.ALModule):
     def dance(self, song_info):
         tts = naoqi.ALProxy("ALTextToSpeech", self.strNaoIp, self.naoPort)
         print("In Dance function")
-        tts.say("Song recognized, dancing to " + song_info.get('song_name'))
         time.sleep(1)
+        print("Score: ", song_info.get('score'))
         if song_info.get('score') < 3:
             tts.say("Not recognizing the song, please try again")
             time.sleep(1)
         else:
+            tts.say("Song recognized, dancing to " + song_info.get('song_name'))
             self.danceRoom.perform_dance(song_info.get('song_name'))
 
     def processRemote(self, nbOfChannels, nbrOfSamplesByChannel, aTimeStamp, buffer):
@@ -108,7 +109,7 @@ class SoundReceiverModule(naoqi.ALModule):
         result = runner.run_script('recognise', 'out.wav').splitlines()
         result = {
             'song_name': result[0].encode('ascii', 'replace'),
-            'score': result[1].encode('ascii', 'replace')
+            'score': int(result[1].encode('ascii', 'replace'))
         }
         return result
 
@@ -139,7 +140,7 @@ def main():
     parser.set_defaults(
         pip=NAO_IP,
         pport=9559,
-        seconds = 5)
+        seconds = 8)
 
     (opts, args_) = parser.parse_args()
     pip = opts.pip

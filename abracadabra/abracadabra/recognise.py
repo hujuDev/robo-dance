@@ -137,7 +137,7 @@ def recognise_song(filename):
     info = get_info_for_song_id(matched_song)
     if info is not None:
         return info + (score,)
-    return matched_song + (score,)
+    return matched_song
 
 
 def listen_to_song(filename=None):
